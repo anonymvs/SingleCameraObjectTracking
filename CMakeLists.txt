@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( SingleCameraObjectTracking )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( SingleCameraObjectTracking main.cpp detector.cpp detector.h)
+target_link_libraries( SingleCameraObjectTracking ${OpenCV_LIBS} )

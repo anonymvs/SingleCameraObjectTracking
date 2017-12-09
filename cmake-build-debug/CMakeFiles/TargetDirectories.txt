@@ -1,0 +1,3 @@
+/home/hegedus/active_workspace/témalabor/SingleCameraObjectTracking/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/hegedus/active_workspace/témalabor/SingleCameraObjectTracking/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/hegedus/active_workspace/témalabor/SingleCameraObjectTracking/cmake-build-debug/CMakeFiles/SingleCameraObjectTracking.dir
