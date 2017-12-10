@@ -34,9 +34,55 @@ void Detection::inRangeDetectionHSV(Mat &frame) {
 
     inRange(hsv, lowTresh, highTresh, frame);
     GaussianBlur(frame, frame, Size(15, 15), 0, 0);
-/*    namedWindow("mask", WINDOW_AUTOSIZE);
-    imshow("mask", frame);*/
 }
+
+void Detection::detect(Mat frame, std::vector<Vec3f> &circles) {
+    inRangeDetectionHSV(frame);
+    HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 0.5, frame.rows / 8, 40, 35, 0, 0);
+}
+
+void Detection::drawCircles(Mat &frame, std::vector<Vec3f> circles, Scalar color) {
+    if(circles.empty()) return;
+    for(size_t i = 0; i < circles.size(); ++i) {
+        cv::Point2f center(std::round(circles[i][0]), std::round(circles[i][1]));
+        int radius = (int) std::round(circles[i][2]);
+
+        cv::circle(frame, center, radius, color, 10);
+    }
+}
+
+cv::Mat Detection::getMask(cv::Mat src) {
+    inRangeDetectionHSV(src);
+    return src;
+}
+cv::Mat Detection::getCannyEdge(cv::Mat src) {
+    cannyEdgeDetection(src);
+    return src;
+}
+
+float euclideanDist(Point2f p, Point2f q) {
+    Point2f diff = p -q;
+    return sqrtf(diff.x * diff.x + diff.y * diff.y);
+}
+cv::Vec3f avgCircles(cv::Vec3f &lhs, cv::Vec3f &rhs) {
+    cv::Vec3f ret(
+            (lhs[0] + rhs[0]) / 2,
+            (lhs[1] + rhs[1]) / 2,
+            (lhs[2] + rhs[2]) / 2
+    );
+    return ret;
+}
+
+float Detection::distanceToCamera(float known_width, float focalLength, float perWidth) {
+    /*char buff[50];
+    sprintf(buff, "distance = (%f * %f) / %f\n", known_width, focalLength, perWidth);
+    std::cout << buff;*/
+    return (known_width * focalLength) / perWidth;
+}
+
+
+
+
 
 void Detection::inRangeDetectionYUV(Mat &frame) {
     Mat rem_spek;
@@ -54,26 +100,13 @@ void Detection::inRangeDetectionYUV(Mat &frame) {
     inRange(rem_spek, lowTresh, highTresh, frame);
     GaussianBlur(frame, frame, Size(9, 9), 2, 2);
 }
+void Detection::cannyEdgeDetection(Mat &frame) {
+    Mat gray;
 
-
-void Detection::detect(Mat frame, std::vector<Vec3f> &circles) {
-    inRangeDetectionHSV(frame);
-    //HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 1, 50, 70, 35, 0, 0);
-    HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 0.5, frame.rows / 8, 40, 35, 0, 0);
+    int tresh = 100;
+    cvtColor(frame, gray, CV_BGR2GRAY);
+    Canny(gray, frame, tresh, tresh * 2, 3);
 }
 
-void Detection::drawCircles(Mat &frame, std::vector<Vec3f> circles, Scalar color) {
-    if(circles.empty()) return;
-    for(size_t i = 0; i < circles.size(); ++i) {
-        cv::Point center(std::round(circles[i][0]), std::round(circles[i][1]));
-        int radius = std::round(circles[i][2]);
 
-        cv::circle(frame, center, radius, color, 5);
-    }
-}
-
-cv::Mat Detection::getMask(cv::Mat src) {
-    inRangeDetectionHSV(src);
-    return src;
-}
 
