@@ -8,10 +8,9 @@
 #include <opencv2/core/ocl.hpp>
 
 #include "detector.h"
+#include <math.h>
 
 using namespace cv;
-
-//gnuplottal 3d vizualizáció
 
 Detection::Detection() : lowTresh{HSV_RED_LOWTRESHOLD}, highTresh{HSV_RED_HIGHTRESHOLD}, type{Type::inRange_HSV} {}
 
@@ -19,7 +18,6 @@ Detection::Detection(Scalar lowTresh = Scalar(0,0,0),
                      Scalar highTresh = Scalar(255,255,255),
                      Type type = Type::inRange_HSV) : lowTresh{lowTresh}, highTresh{highTresh}, type{type} {}
 
-// changes the Mat parameter into a masked blurred HSV
 void Detection::inRangeDetectionHSV(Mat &frame) {
     Mat hsv;
     cvtColor(frame, hsv, COLOR_BGR2HSV);
@@ -80,10 +78,6 @@ float Detection::distanceToCamera(float known_width, float focalLength, float pe
     return (known_width * focalLength) / perWidth;
 }
 
-
-
-
-
 void Detection::inRangeDetectionYUV(Mat &frame) {
     Mat rem_spek;
     cvtColor(frame, rem_spek, CV_BGR2YUV);
@@ -106,6 +100,11 @@ void Detection::cannyEdgeDetection(Mat &frame) {
     int tresh = 100;
     cvtColor(frame, gray, CV_BGR2GRAY);
     Canny(gray, frame, tresh, tresh * 2, 3);
+}
+
+float Detection::calculateFOV(float f, int w) {
+    float ret = 2 * tan((w / 2) / f);
+    return ret;
 }
 
 

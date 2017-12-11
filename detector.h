@@ -37,8 +37,6 @@ private:
     void inRangeDetectionYUV(cv::Mat &);
     void cannyEdgeDetection(cv::Mat &);
 
-    void intersectingCircles(std::vector<cv::Vec3f> &, std::vector<cv::Vec3f> &);
-
 public:
     Detection();
 
@@ -53,6 +51,8 @@ public:
     cv::Mat getCannyEdge(cv::Mat);
 
     float distanceToCamera(float, float, float);
+
+    float calculateFOV(float, int);
 };
 
 

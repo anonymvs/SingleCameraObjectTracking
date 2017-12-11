@@ -18,14 +18,13 @@ void videoDetection();
 using namespace std;
 using namespace cv;
 
-const char * VIDEO_PATH = "/home/hegedus/Videos/ball_camera_120.mp4";
-float focalLength = 3272.61360667;
+float focalLength = 3272.61360667f;
+float HFOV = 1.32963f;  // 76.18°
+float VFOV = 0.68511f;  // 39,25°
 static float KNOWN_DISTANCE = 30.0f;
 static float KNOWN_WIDTH = 7.5f;
 
 std::vector<float> timeline;
-
-//-c /home/hegedus/Videos/IMG_20171208_235426.jpg /home/hegedus/Videos/ball_camera_120.mp4
 
 void calculationsOnFrame(Mat &frame, Detection &detection, std::vector<cv::Vec3f> circles, Mat &mask) {
     detection.detect(frame, circles);
@@ -82,8 +81,10 @@ void videoDetection(char* path) {
             case (27):
                 state = false;
             case (97): {
-                video.read(frame);
-                calculationsOnFrame(frame, detection, circles, mask);
+                if(!video.read(frame))
+                    state = false;
+                else
+                    calculationsOnFrame(frame, detection, circles, mask);
                 break;
             }
             case (98):
@@ -105,8 +106,12 @@ void videoDetection(char* path) {
         //imshow("not def window", mask);
 
         if(cont) {
-            video.read(frame);
-            calculationsOnFrame(frame, detection, circles, mask);
+            if(!video.read(frame)) {
+                state = false;
+                saveTimeline();
+            } else {
+                calculationsOnFrame(frame, detection, circles, mask);
+            }
         }
     }
 }
@@ -120,14 +125,10 @@ void imageDetection(char* path) {
         return;
     }
 
-    namedWindow("def", WINDOW_AUTOSIZE);
-
     Mat frame = image;
     std::vector<cv::Vec3f> circles;
 
     frame = imread(path, 1);
-    //resize(frame, frame, Size(1024, 576), 0, 0, INTER_LANCZOS4);
-    //imshow("def", frame);
     detection.detect(frame, circles);
     detection.drawCircles(frame, circles, Scalar(255, 0, 0));
     imshow("def", frame);
@@ -144,6 +145,10 @@ void imageDetection(char* path) {
     sprintf(buff, "%f = (%f * 2 * %f) / %f\n", focalLength, circles[0][2], KNOWN_DISTANCE, KNOWN_WIDTH);
     std::cout << buff;
     float distance = detection.distanceToCamera(KNOWN_WIDTH, focalLength, circles[0][2] * 2);
+    //std::cout << "frame width: " << frame.cols << "\t frame height: " << frame.rows << "\n";
+    float HFOV = detection.calculateFOV(focalLength, frame.cols);
+    float VFOV = detection.calculateFOV(focalLength, frame.rows);
+    std::cout << HFOV << "\t" << VFOV << "\n";
     std::cout << "distance = " << distance << "\n";
 
 }
@@ -163,21 +168,23 @@ int main(int argc, char** argv) {
             videoDetection(argv[2]);
             break;
         case 'c' :
+            //-c /home/hegedus/Videos/IMG_20171208_235426.jpg /home/hegedus/Videos/ball_camera_120.mp4
             if(argc == 3) {
                 cout << "Missing parameter";
                 return -1;
             }
             std::cout << argv[2] << "\n" << argv[3];
             //imageDetection(argv[2]);
-            /*imageDetection("/home/hegedus/Videos/red_ball_30cm.jpg");
-            KNOWN_DISTANCE = 60.0f;
-            imageDetection("/home/hegedus/Videos/red_ball_60cm.jpg");
-            KNOWN_DISTANCE = 90.0f;
-            imageDetection("/home/hegedus/Videos/red_ball_90cm.jpg");
-            KNOWN_DISTANCE = 120.0f;
-            imageDetection("/home/hegedus/Videos/red_ball_120cm.jpg");*/
             videoDetection(argv[3]);
             break;
+        case 'f':
+            imageDetection((char*)"/home/hegedus/Videos/red_ball_30cm.jpg");
+            KNOWN_DISTANCE = 60.0f;
+            imageDetection((char*)"/home/hegedus/Videos/red_ball_60cm.jpg");
+            KNOWN_DISTANCE = 90.0f;
+            imageDetection((char*)"/home/hegedus/Videos/red_ball_90cm.jpg");
+            KNOWN_DISTANCE = 120.0f;
+            imageDetection((char*)"/home/hegedus/Videos/red_ball_120cm.jpg");
         default:
         std::cout << "Invalid parameters\n";
     }
