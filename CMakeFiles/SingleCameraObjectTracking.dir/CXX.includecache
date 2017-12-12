@@ -17,8 +17,6 @@ opencv2/core/ocl.hpp
 -
 detector.h
 /home/hegedus/active_workspace/témalabor/SingleCameraObjectTracking/detector.h
-math.h
--
 
 /home/hegedus/active_workspace/témalabor/SingleCameraObjectTracking/detector.h
 opencv2/opencv.hpp

@@ -8,7 +8,6 @@
 #include <opencv2/core/ocl.hpp>
 
 #include "detector.h"
-#include <math.h>
 
 using namespace cv;
 
@@ -32,11 +31,15 @@ void Detection::inRangeDetectionHSV(Mat &frame) {
 
     inRange(hsv, lowTresh, highTresh, frame);
     GaussianBlur(frame, frame, Size(15, 15), 0, 0);
+    Mat mask;
+    resize(frame, mask, Size(1024, 576), 0, 0, INTER_LANCZOS4);
+    imshow("bla", mask);
 }
 
 void Detection::detect(Mat frame, std::vector<Vec3f> &circles) {
     inRangeDetectionHSV(frame);
     HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 0.5, frame.rows / 8, 40, 35, 0, 0);
+    std::cout << circles.size() << "\n";
 }
 
 void Detection::drawCircles(Mat &frame, std::vector<Vec3f> circles, Scalar color) {
@@ -105,6 +108,24 @@ void Detection::cannyEdgeDetection(Mat &frame) {
 float Detection::calculateFOV(float f, int w) {
     float ret = 2 * tan((w / 2) / f);
     return ret;
+}
+
+cv::Point3f Detection::calculateCoordinates(float const focalLength, float const distance, int const height, int const width, float const x, float const y) {
+    Vec3f camera{0,0,0};
+    Vec3f plane_point{
+            x - height / 2,
+            y - width / 2,
+            focalLength
+    };
+    Vec3f dir = plane_point - camera;
+    float d = sqrtf(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+    Vec3f dir_unit{dir[0] / d, dir[1] / d, dir[2] / d};
+    Point3f p{
+            camera[0] + dir_unit[0] * distance,
+            camera[1] + dir_unit[1] * distance,
+            camera[2] + dir_unit[2] * distance
+    };
+    return p;
 }
 
 

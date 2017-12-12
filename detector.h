@@ -53,6 +53,8 @@ public:
     float distanceToCamera(float, float, float);
 
     float calculateFOV(float, int);
+
+    cv::Point3f calculateCoordinates(float const, float const, int const, int const, float const, float const);
 };
 
 
